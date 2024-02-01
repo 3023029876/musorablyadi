@@ -1,7 +1,27 @@
 import pandas as pd
 import streamlit as st
 import plotly.express as px
+import base64
+from io import StringIO,BytesIO
 import openpyxl
+
+def generate_excel_download_link(df):
+    towrite = BytesIO()
+    df.to_excel(towrite, index=False, header=True)
+    towrite.seek(0)
+    b64 = base64.b64encode(towrite.read()).decode()
+    href = f'<a href="data:app;ication/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="data_download.xlsx">Скачать Excel-файл</a>'
+    return st.markdown(href, unsafe_allow_html=True)
+
+def generate_html_download_link(fig):
+    towrite = StringIO()
+    fig.write_html(towrite, include_plotlyjs="cdn")
+    towrite = BytesIO(towrite.getvalue().encode())
+    b64 = base64.b64encode(towrite.read()).decode()
+    href = f'<a href="data:text/html;charset=utf-8;base64, {b64}" download="plot.html">Скачать график</a>'
+    return st.markdown(href, unsafe_allow_html=True)
+
+
 
 st.set_page_config(page_title="Excel Plotter")
 st.title("Excel Plotter 📈")
@@ -29,9 +49,9 @@ fig = px.bar(
     )
 st.plotly_chart(fig)
 
-
-
-
+st.subheader("Downloads:")
+generate_excel_download_link(df_grouped)
+generate_html_download_link(fig)
 
 
 
